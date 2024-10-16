@@ -4,20 +4,20 @@ It also defines the storage location which can be a network share or whatever yo
 We designate the VMname as a variable in the first line to make it easier to call throughout.
 #>
 
-$VMName = "CLab-WS2019-06"
+$VMName = "<Name Of VM>"
 
 $VM = @{
     Name = $VMName
     MemoryStartupbytes = 4194304000
     Generation = 2
-    NewVHDPath =  "E:\Virtual Hard Disks\Virtual Machines\$VMName\$VMName.vhdx"
+    NewVHDPath =  "C:\Virtual Machines\$VMName\$VMName.vhdx" #location of virtual machine folder
     NewVHDSizeBytes = 53687091200
     BootDevice = "VHD"
-    Path = "E:\Virtual Hard Disks\Virtual Machines\$VMName"
-    SwitchName = "CLab-01-Switch"
+    Path = "C:\Virtual Machines\$VMName" #location of virtual machine folder
+    SwitchName = "<Name Of Switch>" #the name of the switch you'd like to attach this too
 
 }
 
 New-VM @VM
 
-Add-VMDvdDrive -VMName $VMName -Path \\192.168.1.149\media\iso\17763.3650.221105-1748.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso
+Add-VMDvdDrive -VMName $VMName -Path C:\\_en-us.iso #what iso you want to attach to the VM
