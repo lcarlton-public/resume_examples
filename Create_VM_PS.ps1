@@ -1,7 +1,13 @@
-﻿<#
-This scripts is to create a single VM, attach it to the designated switch, and then add a DVD Drive with ISO for the image afterwards.
-It also defines the storage location which can be a network share or whatever you would like to add.
-We designate the VMname as a variable in the first line to make it easier to call throughout.
+<#
+.SUMMARY
+Create a new VM, 4MB, Gen 2, save location, and attach to lab switch.
+.DESCRIPTION
+This will create a new Hyper-V VM, and attach an ISO to boot when started.
+.PARAMETER Name
+This will be the naming convention of the VM. We could add a check for the name
+.NOTES
+Author: Leron Carlton
+Contact: lcarlton@student.cscc.edu
 #>
 
 $VMName = "<Name Of VM>"
