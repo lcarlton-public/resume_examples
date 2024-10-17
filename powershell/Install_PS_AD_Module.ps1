@@ -9,6 +9,9 @@ Upon completion it installs the Active Directory Module.
 Author: Leron Carlton
 Contact: lcarlton@student.cscc.edu
 #>
+<# 
+
+This script is still a Work In Progress; I'm working to get it to work consistently on varied versions of powershell.
 
 # Check if the Active Directory module can be loaded
 $module = Get-Module -ListAvailable -Name ActiveDirectory
@@ -52,3 +55,4 @@ Import-Module ActiveDirectory
 
 # Get commands (optional)
 Get-Command -Module ActiveDirectory
+#>
