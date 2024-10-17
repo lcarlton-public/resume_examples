@@ -1,29 +1,85 @@
 <#
 .SUMMARY
-Create a new VM, 4MB, Gen 2, save location, and attach to lab switch.
+Create a new VM with specified parameters.
 .DESCRIPTION
-This will create a new Hyper-V VM, and attach an ISO to boot when started.
-.PARAMETER Name
-This will be the naming convention of the VM. We could add a check for the name
+This script creates a new Hyper-V VM with configurable options for name, memory, generation, disk size, and network switch. 
+.PARAMETER VMName
+The name of the virtual machine.
+.PARAMETER MemoryStartupBytes
+The amount of startup memory in bytes.
+.PARAMETER Generation
+The generation of the virtual machine (1 or 2).
+.PARAMETER NewVHDPath
+The path to the new virtual hard disk file.
+.PARAMETER NewVHDSizeBytes
+The size of the new virtual hard disk in bytes.
+.PARAMETER SwitchName
+The name of the virtual switch to connect the VM to.
+.PARAMETER ISOPath
+The path to the ISO file for the DVD drive.
 .NOTES
 Author: Leron Carlton
 Contact: lcarlton@student.cscc.edu
 #>
 
-$VMName = "<Name Of VM>"
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$VMName,
 
-$VM = @{
-    Name = $VMName
-    MemoryStartupbytes = 4194304000
-    Generation = 2
-    NewVHDPath =  "C:\Virtual Machines\$VMName\$VMName.vhdx" #location of virtual machine folder
-    NewVHDSizeBytes = 53687091200
-    BootDevice = "VHD"
-    Path = "C:\Virtual Machines\$VMName" #location of virtual machine folder
-    SwitchName = "<Name Of Switch>" #the name of the switch you'd like to attach this too
+    [Parameter(Mandatory = $false)]
+    [int64]$MemoryStartupBytes = 4GB, 
 
+    [Parameter(Mandatory = $false)]
+    [int]$Generation = 2,
+
+    [Parameter(Mandatory = $false)]
+    [string]$NewVHDPath = "C:\Virtual Machines\$VMName\$VMName.vhdx",
+
+    [Parameter(Mandatory = $false)]
+    [int64]$NewVHDSizeBytes = 50GB,
+
+    [Parameter(Mandatory = $true)]
+    [string]$SwitchName,
+
+    [Parameter(Mandatory = $false)]
+    [string]$ISOPath = "C:\_en-us.iso" 
+)
+
+# Input Validation (Examples)
+if (Get-VM -Name $VMName) {
+    Write-Error "A VM with the name '$VMName' already exists."
+    exit 1
 }
 
-New-VM @VM
+if (!(Get-VMSwitch -Name $SwitchName)) {
+    Write-Error "The virtual switch '$SwitchName' does not exist."
+    exit 1
+}
 
-Add-VMDvdDrive -VMName $VMName -Path C:\\_en-us.iso #what iso you want to attach to the VM
+# Create the VM
+try {
+    $VM = @{
+        Name = $VMName
+        MemoryStartupBytes = $MemoryStartupBytes
+        Generation = $Generation
+        NewVHDPath = $NewVHDPath
+        NewVHDSizeBytes = $NewVHDSizeBytes
+        BootDevice = "VHD"
+        Path = "C:\Virtual Machines\$VMName"
+        SwitchName = $SwitchName
+    }
+
+    New-VM @VM
+
+    # Add DVD Drive
+    Add-VMDvdDrive -VMName $VMName -Path $ISOPath
+
+    Write-Host "VM '$VMName' created successfully."
+}
+catch {
+    Write-Error "An error occurred while creating the VM: $_"
+    exit 1
+}
+
+# Optionally start the VM
+# Start-VM -Name $VMName
