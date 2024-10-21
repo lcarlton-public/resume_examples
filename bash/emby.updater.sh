@@ -44,7 +44,7 @@ log "Download URL: $download_url"
 log "Downloading latest Emby Server RPM..."
 retries=3
 for i in $(seq 1 $retries); do
-  curl -L -o /tmp/emby-server.rpm "$download_url"
+  curl -L -o /var/tmp/emby-server.rpm "$download_url"
   if [[ $? -eq 0 ]]; then
     log "Download successful."
     break
@@ -62,7 +62,7 @@ fi
 
 # Install the RPM (ensure permissions with sudo)
 log "Installing Emby Server RPM..."
-sudo dnf install -y /tmp/emby-server.rpm
+sudo dnf install -y /var/tmp/emby-server.rpm
 if [[ $? -ne 0 ]]; then
   log "Error installing Emby Server RPM."
   exit 1
@@ -88,4 +88,4 @@ fi
 log "Emby Server update completed successfully."
 
 # Clean up temporary file
-rm /tmp/emby-server.rpm
+rm /var/tmp/emby-server.rpm
