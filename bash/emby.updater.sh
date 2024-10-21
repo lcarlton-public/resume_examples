@@ -16,28 +16,28 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-# Get the latest version number from GitHub releases
-# Add retry logic for more robust fetching
-retries=3
-for i in $(seq 1 $retries); do
-  latest_version=$(curl -s "https://api.github.com/repos/MediaBrowser/Emby.Releases/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-  if [[ -n "$latest_version" ]]; then
-    log "Latest version found: $latest_version"
-    break
-  else
-    log "Attempt $i failed to fetch latest version. Retrying..."
-    sleep 2 
-  fi
-done
-
-# Exit if version retrieval failed after retries
-if [[ -z "$latest_version" ]]; then
-  log "Error: Failed to fetch latest version after $retries attempts."
+# Extract the latest version and download URL from the Emby website
+log "Fetching latest version and download URL from Emby website..."
+html=$(curl -s "https://emby.media/linux-server.html")
+if [[ $? -ne 0 ]]; then
+  log "Error fetching Emby website."
   exit 1
 fi
 
-# Construct the download URL
-download_url="https://github.com/MediaBrowser/Emby.Releases/releases/download/$latest_version/emby-server-rpm_$latest_version\_x86_64.rpm"
+# Extract the version number (adjust the grep/sed commands if the website structure changes)
+latest_version=$(echo "$html" | grep -oE 'Fedora x64.*emby-server-rpm_[0-9.]+_x86_64.rpm' | grep -oE 'emby-server-rpm_[0-9.]+_x86_64.rpm' | sed -E 's/emby-server-rpm_([0-9.]+)_x86_64.rpm/\1/')
+if [[ -z "$latest_version" ]]; then
+  log "Error extracting latest version from website."
+  exit 1
+fi
+log "Latest version found: $latest_version"
+
+# Extract the download URL (adjust the grep/sed commands if the website structure changes)
+download_url=$(echo "$html" | grep -oE 'Fedora x64.*emby-server-rpm_[0-9.]+_x86_64.rpm' | sed -E 's/.*href="([^"]+)".*/\1/')
+if [[ -z "$download_url" ]]; then
+  log "Error extracting download URL from website."
+  exit 1
+fi
 log "Download URL: $download_url"
 
 # Download the latest RPM with retry logic
@@ -68,4 +68,24 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-# ... (rest of the script remains the same)
+# Validate installation (check if emby-server process is running)
+log "Validating installation..."
+if pgrep emby-server > /dev/null; then
+  log "Emby Server installed successfully."
+else
+  log "Emby Server installation failed."
+  exit 1
+fi
+
+# Start Emby Server
+log "Starting Emby Server..."
+systemctl start emby-server
+if [[ $? -ne 0 ]]; then
+  log "Error starting Emby Server."
+  exit 1
+fi
+
+log "Emby Server update completed successfully."
+
+# Clean up temporary file
+rm /tmp/emby-server.rpm
