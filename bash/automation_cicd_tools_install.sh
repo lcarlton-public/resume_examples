@@ -132,7 +132,6 @@ sudo systemctl start jenkins
 check_error
 sudo systemctl status jenkins
 
-
 # Install Terraform
 if [[ "${package_manager}" == "dnf" ]]; then
   sudo dnf install -y dnf-plugins-core
@@ -145,8 +144,12 @@ elif [[ "${package_manager}" == "zypper" ]]; then
 elif [[ "${package_manager}" == "apt" ]]; then
   wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
   check_error
-  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+  # Use lsb_release -cs to get the codename
+  codename=$(lsb_release -cs)
+  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com ${codename} main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
   check_error
+
   sudo apt update
   check_error
 elif [[ "${package_manager}" == "yum" ]]; then
